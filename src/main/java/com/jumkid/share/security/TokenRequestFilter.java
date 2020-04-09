@@ -30,8 +30,6 @@ import java.io.PrintWriter;
 @Component
 public class TokenRequestFilter extends OncePerRequestFilter {
 
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-
     @Value("${oauth.provider.token.enable}")
     private boolean enableTokenCheck;
 
@@ -40,34 +38,27 @@ public class TokenRequestFilter extends OncePerRequestFilter {
 
     private final RestTemplate restTemplate;
 
+    private TokenUser tokenUser;
+
     @Autowired
-    public TokenRequestFilter(RestTemplate restTemplate) {
+    public TokenRequestFilter(RestTemplate restTemplate, TokenUser tokenUser) {
         this.restTemplate = restTemplate;
+        this.tokenUser = tokenUser;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         if (enableTokenCheck) {
-            final String requestTokenHeader = request.getHeader(HEADER_AUTHORIZATION);
-
-            String username = null;
-            String accessToken = null;
-
-            if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-                String token = requestTokenHeader.substring(7);
+            if (tokenUser != null) {
+                String username;
+                String accessToken;
                 try {
-                    TokenUser tokenUser = new TokenUser(token);
                     username = tokenUser.getUsername();
                     if (username != null) {
                         log.info("Found jwt token with username: {}", username);
-                        accessToken = tokenUser.getAuthorizationToken();
-                    } else {
-                        accessToken = token;
                     }
-
-                    // set the token back to response
-                    response.setHeader(HEADER_AUTHORIZATION, requestTokenHeader);
+                    accessToken = tokenUser.getAuthorizationToken();
 
                     if (!isAccessTokenValid(accessToken)) {
                         log.info("access token is invalid {}", accessToken);
@@ -83,7 +74,7 @@ public class TokenRequestFilter extends OncePerRequestFilter {
 
                 }
             } else {
-                logger.warn("JWT Token is not presented or does not begin with Bearer String");
+                logger.warn("Authentication Token is not presented or does not begin with Bearer String");
                 throw new JwtTokenNotFoundException();
             }
         }
