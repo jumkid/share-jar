@@ -7,28 +7,27 @@ import lombok.Setter;
 @Getter @Setter
 public class TokenSession {
 
-        private boolean active;
-
-        @JsonProperty("client_id")
-        private String clientId;
+        private boolean active = true;
 
         @JsonProperty("sub")
         private String subject;
 
-        @JsonProperty("exp")
-        private Integer expireAt;
+        private String email;
 
-        @JsonProperty("iat")
-        private Integer issuedAt;
+        private String name;
 
-        @JsonProperty("iss")
-        private String issuedBy;
+        @JsonProperty("preferred_username")
+        private String preferredUsername;
 
-        @JsonProperty("token_type")
-        private String tokenType;
+        @JsonProperty("given_name")
+        private String givenName;
 
-        private String username;
+        @JsonProperty("family_name")
+        private String familyName;
 
-        private String scope;
+        private String error;
+
+        @JsonProperty("error_description")
+        private String errorDescription;
 
 }

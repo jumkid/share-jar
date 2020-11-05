@@ -9,13 +9,14 @@ import com.jumkid.share.security.jwt.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -25,20 +26,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
 public class TokenRequestFilter extends OncePerRequestFilter {
 
-    @Value("${oauth.provider.token.enable}")
+    @Value("${jwt.token.enable}")
     private boolean enableTokenCheck;
 
-    @Value("${oauth.provider.token.introspect.url}")
+    @Value("${jwt.token.introspect.url}")
     private String tokenIntrospectUrl;
 
     private final RestTemplate restTemplate;
 
-    private TokenUser tokenUser;
+    private final TokenUser tokenUser;
 
     @Autowired
     public TokenRequestFilter(RestTemplate restTemplate, TokenUser tokenUser) {
@@ -50,36 +53,51 @@ public class TokenRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         if (enableTokenCheck) {
-            if (tokenUser != null) {
-                String username;
-                String accessToken;
-                try {
-                    username = tokenUser.getUsername();
-                    if (username != null) {
-                        log.info("Found jwt token with username: {}", username);
-                    }
-                    accessToken = tokenUser.getAuthorizationToken();
+            try {
+                if (tokenUser != null) {
+                    String accessToken;
 
-                    if (!isAccessTokenValid(accessToken)) {
-                        log.info("access token is invalid {}", accessToken);
-                        handleInvalidAccessTokenResponse(response);
-                        return;
-                    }
+                        accessToken = tokenUser.getAuthorizationToken();
 
-                } catch (IllegalArgumentException iae) {
-                    log.error("Unable to get JWT Token");
-                } catch (JwtExpiredException jee) {
-                    log.info("JWT Token has expired");
-                    //TODO: renew token if refresh presented
-
+                        if (!isAccessTokenValid(accessToken)) {
+                            log.warn("access token is invalid {}", accessToken);
+                            handleInvalidAccessTokenResponse(response);
+                        } else {
+                            log.debug("token user roles: [{}]", String.join(",", tokenUser.getRoles()));
+                            setContextAuthentication(tokenUser.getRoles());
+                        }
+                } else {
+                    logger.warn("Authentication Token is not presented or does not begin with Bearer String");
+                    throw new JwtTokenNotFoundException();
                 }
-            } else {
-                logger.warn("Authentication Token is not presented or does not begin with Bearer String");
-                throw new JwtTokenNotFoundException();
+            } catch (IllegalArgumentException iae) {
+                log.error("Unable to get JWT Token");
+            } catch (JwtExpiredException jee) {
+                log.info("JWT Token has expired");
+                //TODO: renew token if refresh presented
+
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void setContextAuthentication(List<String> roles) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
+
+        UserDetails userDetails = User.builder()
+                .username(tokenUser.getUsername())
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .authorities(authorities)
+                .disabled(false)
+                .build();
+
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 
     private boolean isAccessTokenValid(String accessToken) {
@@ -87,20 +105,19 @@ public class TokenRequestFilter extends OncePerRequestFilter {
             log.debug("verify access token {}", accessToken);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setBearerAuth(accessToken);
 
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-            map.add("token", accessToken);
-
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+            HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
 
             try {
-                TokenSession session = restTemplate.postForObject(tokenIntrospectUrl, request, TokenSession.class);
-                if (session != null) {
-                    //TODO: renew token if refresh presented and it will expire in timeout threshold
-                    return session.isActive();
+                ResponseEntity<TokenSession> response = restTemplate.exchange(tokenIntrospectUrl, HttpMethod.GET, request,
+                        TokenSession.class);
+                TokenSession token = response.getBody();
+                if (token != null) {
+                    return token.getError() == null && token.isActive();
                 }
             } catch (Exception e) {
-                log.error("Failed to fetch token information from oauth provider");
+                log.error("Failed to fetch token information from oauth provider {}", e.getMessage());
             }
         }
 

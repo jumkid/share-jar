@@ -5,6 +5,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -14,7 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Configuration
-public class TokenSecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+public abstract class BearerTokenSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String HEADER_AUTHORIZATION = "Authorization";
 
@@ -33,11 +38,20 @@ public class TokenSecurityConfig extends WebSecurityConfigurerAdapter {
             assert response != null;
             response.setHeader(HEADER_AUTHORIZATION, authorizationHeader);
 
-            String token = authorizationHeader.split(" ")[1];
+            String token = authorizationHeader.split("\\s+")[1];
             return new TokenUser(token);
         }
 
-        return  null;
+        return null;
     }
+
+    @Override
+    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Override
+    protected abstract void configure(HttpSecurity http) throws Exception;
 
 }

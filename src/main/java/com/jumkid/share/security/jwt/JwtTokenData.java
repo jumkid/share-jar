@@ -37,5 +37,9 @@ public class JwtTokenData implements Serializable {
 
     @JsonProperty("realm_access")
     private Map<String, List<String>> realmAccess;
+
+    @JsonProperty("resource_access")
+    private Map<String, Map<String, List<String>>> resourceAccess;
+
 }
 
