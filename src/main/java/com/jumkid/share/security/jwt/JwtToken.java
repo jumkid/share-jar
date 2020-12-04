@@ -1,38 +1,48 @@
 package com.jumkid.share.security.jwt;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Setter;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
-@Slf4j
 @Getter
+@Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JwtToken implements Serializable {
 
-    private JwtTokenData tokenData;
+    @JsonProperty("sub")
+    private String userId;
 
-    public JwtToken(String token) {
-        String[] splitString = token.split("\\.");
+    @JsonProperty("name")
+    private String displayName;
 
-        if (splitString.length != 3) {
-            log.error("JWT token could not be split into three parts ({}).", token);
-        } else {
-            String base64EncodedBody = splitString[1];
+    @JsonProperty("preferred_username")
+    private String username;
 
-            Base64.Decoder decoder = Base64.getUrlDecoder();
-            String tokenBody = new String(decoder.decode(base64EncodedBody));
+    @JsonProperty("given_name")
+    private String givenName;
 
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                tokenData = mapper.readValue(tokenBody, JwtTokenData.class);
-            } catch (IOException e) {
-                log.error("Could not read data from JWT token ({}).", token, e);
-            }
-        }
-    }
+    @JsonProperty("family_name")
+    private String familyName;
+
+    @JsonProperty("email")
+    private String emailAddress;
+
+    @JsonProperty("companyIds")
+    private List<Integer> companyIds;
+
+    @JsonProperty("email_verified")
+    private boolean emailVerified;
+
+    @JsonProperty("realm_access")
+    private Map<String, List<String>> realmAccess;
+
+    @JsonProperty("resource_access")
+    private Map<String, Map<String, List<String>>> resourceAccess;
+
 }
+

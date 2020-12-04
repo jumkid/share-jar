@@ -3,12 +3,13 @@ package com.jumkid.share.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jumkid.share.controller.response.CommonResponse;
 import com.jumkid.share.security.exception.AccessTokenInvaidException;
-import com.jumkid.share.security.exception.JwtExpiredException;
-import com.jumkid.share.security.exception.JwtTokenNotFoundException;
+import com.jumkid.share.security.jwt.JwtToken;
+import com.jumkid.share.security.jwt.JwtTokenParser;
 import com.jumkid.share.security.jwt.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +19,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -27,11 +30,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
-public class TokenRequestFilter extends OncePerRequestFilter {
+public class BearerTokenRequestFilter extends OncePerRequestFilter {
 
     @Value("${jwt.token.enable}")
     private boolean enableTokenCheck;
@@ -41,12 +46,9 @@ public class TokenRequestFilter extends OncePerRequestFilter {
 
     private final RestTemplate restTemplate;
 
-    private final TokenUser tokenUser;
-
     @Autowired
-    public TokenRequestFilter(RestTemplate restTemplate, TokenUser tokenUser) {
+    public BearerTokenRequestFilter(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.tokenUser = tokenUser;
     }
 
     @Override
@@ -54,40 +56,31 @@ public class TokenRequestFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         if (enableTokenCheck) {
             try {
-                if (tokenUser != null) {
-                    String accessToken;
+                TokenUser tokenUser = getTokenUser(request);
+                String accessToken = tokenUser.getAuthorizationToken();
 
-                        accessToken = tokenUser.getAuthorizationToken();
-
-                        if (!isAccessTokenValid(accessToken)) {
-                            log.warn("access token is invalid {}", accessToken);
-                            handleInvalidAccessTokenResponse(response);
-                        } else {
-                            log.debug("token user roles: [{}]", String.join(",", tokenUser.getRoles()));
-                            setContextAuthentication(tokenUser.getRoles());
-                        }
+                if (!isAccessTokenValid(accessToken)) {
+                    log.warn("access token is invalid {}", accessToken);
+                    handleInvalidAccessTokenResponse(response);
                 } else {
-                    logger.warn("Authentication Token is not presented or does not begin with Bearer String");
-                    throw new JwtTokenNotFoundException();
+                    log.debug("token user roles: [{}]", String.join(",", tokenUser.getRoles()));
+                    setContextAuthentication(tokenUser);
                 }
             } catch (IllegalArgumentException iae) {
                 log.error("Unable to get JWT Token");
-            } catch (JwtExpiredException jee) {
-                log.info("JWT Token has expired");
-                //TODO: renew token if refresh presented
-
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void setContextAuthentication(List<String> roles) {
+    private void setContextAuthentication(TokenUser tokenUser) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
+        tokenUser.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
 
         UserDetails userDetails = User.builder()
                 .username(tokenUser.getUsername())
+                .password(tokenUser.getUserId())  //set userId as password as useId is used internally only
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
@@ -139,6 +132,48 @@ public class TokenRequestFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             throw new AccessTokenInvaidException();
         }
+    }
+
+    private TokenUser getTokenUser(HttpServletRequest request) {
+        final String HEADER_AUTHORIZATION = "Authorization";
+        final String authorizationHeader = request.getHeader(HEADER_AUTHORIZATION);
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+            HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+                    .getResponse();
+
+            // set the token back to response
+            assert response != null;
+            response.setHeader(HEADER_AUTHORIZATION, authorizationHeader);
+
+            String token = authorizationHeader.split("\\s+")[1];
+            Optional<JwtToken> optional = JwtTokenParser.parse(token);
+            if (optional.isPresent()) {
+                JwtToken jwtToken = optional.get();
+
+                log.debug("Authentication bearer token is processed successfully for user {}", jwtToken.getUsername());
+
+                return TokenUser.builder()
+                        .authorizationToken(token)
+                        .userId(jwtToken.getUserId())
+                        .username(jwtToken.getUsername())
+                        .displayName(jwtToken.getDisplayName())
+                        .givenName(jwtToken.getGivenName())
+                        .familyName(jwtToken.getFamilyName())
+                        .email(jwtToken.getEmailAddress())
+                        .companyIds(jwtToken.getCompanyIds())
+                        .roles(jwtToken.getRealmAccess().getOrDefault("roles",
+                                Collections.unmodifiableList(new ArrayList<>())))
+                        .build();
+            }
+        }
+
+        log.debug("Authentication Token is not presented or does not begin with Bearer String");
+
+        return TokenUser.builder()
+                .username("anonymoususer")
+                .displayName("anonymous user")
+                .build();
     }
 
 }
