@@ -28,7 +28,7 @@ public class UserProfileManager {
 
     private final RestTemplate restTemplate;
 
-    private static AccessToken accessToken = null;
+    private AccessToken accessToken = null;
 
     @Autowired
     public UserProfileManager(RestTemplate restTemplate) {
@@ -38,6 +38,7 @@ public class UserProfileManager {
     public UserProfile fetchUserProfile(String userId, String token) {
         if (token == null) {
             if (accessToken == null) accessToken = fetchAccessToken();
+
             if (accessToken != null) token = accessToken.getToken();
             else return null;
         }
@@ -54,9 +55,12 @@ public class UserProfileManager {
         try {
             ResponseEntity<UserProfile> response = restTemplate.exchange(accessEndpoint, HttpMethod.GET, request,
                     UserProfile.class);
-            UserProfile userProfile = response.getBody();
+            if (HttpStatus.UNAUTHORIZED.equals(response.getStatusCode())) {
+                accessToken = null;
+                fetchUserProfile(userId, null);
+            }
 
-            return userProfile;
+            return response.getBody();
         } catch (Exception e) {
             log.error("failed to fetch user profile {}", e.getMessage());
         }
