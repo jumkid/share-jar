@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class JwtToken implements Serializable {
     private boolean emailVerified;
 
     @JsonProperty("realm_access")
-    private Map<String, List<String>> realmAccess;
+    private Map<String, List<String>> realmAccess = new HashMap<>();
 
     @JsonProperty("resource_access")
     private Map<String, Map<String, List<String>>> resourceAccess;

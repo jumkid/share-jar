@@ -7,8 +7,6 @@ import com.jumkid.share.security.jwt.JwtToken;
 import com.jumkid.share.security.jwt.JwtTokenParser;
 import com.jumkid.share.security.jwt.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +15,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -35,19 +32,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Component
 public class BearerTokenRequestFilter extends OncePerRequestFilter {
 
-    @Value("${jwt.token.enable}")
-    private boolean enableTokenCheck;
+    private final boolean enableTokenCheck;
 
-    @Value("${jwt.token.introspect.url}")
-    private String tokenIntrospectUrl;
+    private final String tokenIntrospectUrl;
 
     private final RestTemplate restTemplate;
 
-    @Autowired
-    public BearerTokenRequestFilter(RestTemplate restTemplate) {
+    private static final String ANONYMOUS_USER = "anonymous_user";
+
+    public BearerTokenRequestFilter(boolean enableTokenCheck,
+                                    String tokenIntrospectUrl,
+                                    RestTemplate restTemplate) {
+        this.enableTokenCheck = enableTokenCheck;
+        this.tokenIntrospectUrl = tokenIntrospectUrl;
         this.restTemplate = restTemplate;
     }
 
@@ -59,15 +58,14 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
                 TokenUser tokenUser = getTokenUser(request);
                 String accessToken = tokenUser.getAuthorizationToken();
 
-                if (!isAccessTokenValid(accessToken)) {
+                if (!tokenUser.getUsername().equals(ANONYMOUS_USER) && !isAccessTokenValid(accessToken)) {
                     log.warn("access token is invalid {}", accessToken);
                     handleInvalidAccessTokenResponse(response);
                 } else {
-                    log.debug("token user roles: [{}]", String.join(",", tokenUser.getRoles()));
                     setContextAuthentication(tokenUser);
                 }
             } catch (IllegalArgumentException iae) {
-                log.error("Unable to get JWT Token");
+                log.error("Unable to get access token");
             }
         }
 
@@ -76,11 +74,18 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
 
     private void setContextAuthentication(TokenUser tokenUser) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        tokenUser.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
+        if (tokenUser.getRoles() != null) {
+            StringBuilder sb = new StringBuilder();
+            for (String role :tokenUser.getRoles()) {
+                authorities.add(new SimpleGrantedAuthority(role));
+                sb.append(role).append(" ");
+            }
+            log.debug("token user roles: [{}]", sb.toString());
+        }
 
         UserDetails userDetails = User.builder()
                 .username(tokenUser.getUsername())
-                .password(tokenUser.getUserId())  //set userId as password as useId is used internally only
+                .password(tokenUser.getUserId())  //** set userId as password as useId is used internally only
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
@@ -97,7 +102,6 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
         if (accessToken != null) {
             log.debug("verify access token {}", accessToken);
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.setBearerAuth(accessToken);
 
             HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
@@ -171,7 +175,8 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
         log.debug("Authentication Token is not presented or does not begin with Bearer String");
 
         return TokenUser.builder()
-                .username("anonymoususer")
+                .userId("00000000")
+                .username(ANONYMOUS_USER)
                 .displayName("anonymous user")
                 .build();
     }
