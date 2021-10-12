@@ -40,8 +40,6 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
 
     private final RestTemplate restTemplate;
 
-    private static final String ANONYMOUS_USER = "anonymous_user";
-
     public BearerTokenRequestFilter(boolean enableTokenCheck,
                                     String tokenIntrospectUrl,
                                     RestTemplate restTemplate) {
@@ -58,7 +56,7 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
                 TokenUser tokenUser = getTokenUser(request);
                 String accessToken = tokenUser.getAuthorizationToken();
 
-                if (!tokenUser.getUsername().equals(ANONYMOUS_USER) && !isAccessTokenValid(accessToken)) {
+                if (!isAccessTokenValid(accessToken)) {
                     log.warn("access token is invalid {}", accessToken);
                     handleInvalidAccessTokenResponse(response);
                 } else {
@@ -175,9 +173,6 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
         log.debug("Authentication Token is not presented or does not begin with Bearer String");
 
         return TokenUser.builder()
-                .userId("00000000")
-                .username(ANONYMOUS_USER)
-                .displayName("anonymous user")
                 .build();
     }
 
