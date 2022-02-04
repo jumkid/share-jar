@@ -14,7 +14,7 @@
 .mtj.tmp/
 
 ### IntelliJ IDEA ###
-/.idea
+/.idea/
 
 # Package Files #
 *.jar
