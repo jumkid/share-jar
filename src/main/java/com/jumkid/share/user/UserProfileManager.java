@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -28,14 +30,13 @@ public class UserProfileManager {
 
     private final RestTemplate restTemplate;
 
-    private AccessToken accessToken = null;
-
     @Autowired
     public UserProfileManager(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     public UserProfile fetchUserProfile(String userId, String token) {
+        AccessToken accessToken = null;
         if (token == null) {
             if (accessToken == null) accessToken = fetchAccessToken();
 
@@ -65,6 +66,17 @@ public class UserProfileManager {
             log.error("failed to fetch user profile {}", e.getMessage());
         }
 
+        return null;
+    }
+
+    public UserProfile fetchUserProfile() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails)principal;
+            return UserProfile.builder()
+                    .username(userDetails.getUsername()).id(userDetails.getPassword())
+                    .build();
+        }
         return null;
     }
 

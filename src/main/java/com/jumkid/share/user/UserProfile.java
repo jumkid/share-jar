@@ -1,10 +1,12 @@
 package com.jumkid.share.user;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@Builder
 public class UserProfile {
 
     private String id;

@@ -12,47 +12,64 @@ info:
     name: Jumkid Public License
     url: 'http://license.jumkid.com'
 
+paths: {}
+
 components:
   schemas:
+    CustomErrorResponse:
+      description: custom error response message
+      properties:
+        timestamp:
+          $ref: '#/components/schemas/LocalDateTime'
+        message:
+          type: string
+          nullable: false
+        property:
+          type: array
+        details:
+          type: array
+        httpCodeMessage:
+          type: string
+
     LocalDateTime:
-          description: local datetime object
-          properties:
-            year:
-              type: integer
-              format: int32
-              nullable: false
-            monthValue:
-              type: integer
-              format: int32
-              nullable: false
-            month:
-              $ref: '#/components/schemas/Month'
-            dayOfMonth:
-              type: integer
-              format: int32
-              nullable: false
-            dayOfYear:
-              type: integer
-              format: int32
-              nullable: false
-            dayOfWeek:
-              $ref: '#/components/schemas/DayOfWeek'
-            hour:
-              type: integer
-              format: int32
-              nullable: false
-            minute:
-              type: integer
-              format: int32
-              nullable: false
-            second:
-              type: integer
-              format: int32
-              nullable: false
-            nano:
-              type: integer
-              format: int32
-              nullable: false
+      description: local datetime object
+      properties:
+        year:
+          type: integer
+          format: int32
+          nullable: false
+        monthValue:
+          type: integer
+          format: int32
+          nullable: false
+        month:
+          $ref: '#/components/schemas/Month'
+        dayOfMonth:
+          type: integer
+          format: int32
+          nullable: false
+        dayOfYear:
+          type: integer
+          format: int32
+          nullable: false
+        dayOfWeek:
+          $ref: '#/components/schemas/DayOfWeek'
+        hour:
+          type: integer
+          format: int32
+          nullable: false
+        minute:
+          type: integer
+          format: int32
+          nullable: false
+        second:
+          type: integer
+          format: int32
+          nullable: false
+        nano:
+          type: integer
+          format: int32
+          nullable: false
 
     Month:
       type: string
