@@ -17,7 +17,7 @@
     <properties>
         <java.version>11</java.version>
         <org.projectlombok.version>1.18.24</org.projectlombok.version>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.3</jackson.version>
     </properties>
 
     <dependencies>
