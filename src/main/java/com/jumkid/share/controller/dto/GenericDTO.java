@@ -13,7 +13,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-import static com.jumkid.share.util.Constants.YYYYMMDDTHHMMSS;
+import static com.jumkid.share.util.Constants.YYYYMMDDTHHMMSS3S;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,14 +23,14 @@ public abstract class GenericDTO {
 
     private String createdBy;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = YYYYMMDDTHHMMSS)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = YYYYMMDDTHHMMSS3S)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime creationDate;
 
     private String modifiedBy;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = YYYYMMDDTHHMMSS)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = YYYYMMDDTHHMMSS3S)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime modificationDate;
