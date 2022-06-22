@@ -18,7 +18,7 @@ import static com.jumkid.share.util.Constants.YYYYMMDDTHHMMSS3S;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-@JsonIgnoreProperties(value = { "createdBy", "creationDate", "modifiedBy", "modificationDate" })
+@JsonIgnoreProperties(value = { "createdBy", "creationDate", "modifiedBy" })
 public abstract class GenericDTO {
 
     private String createdBy;

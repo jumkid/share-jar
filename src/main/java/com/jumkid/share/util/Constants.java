@@ -8,7 +8,7 @@ public class Constants {
     public static final String FORMAT_YYYYMMDDTHHMM = "yyyy-MM-dd'T'HH:mm";
     public static final String FORMAT_MMDDYYYYTHHMM = "MM-dd-yyyy'T'HH:mm";
     public static final String YYYYMMDDTHHMMSS = "yyyy-MM-dd'T'HH:mm:ss";
-    public static final String YYYYMMDDTHHMMSS3S = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    public static final String YYYYMMDDTHHMMSS3S = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     public static final String ANONYMOUS_USER = "anonymousUser";
     public static final String GUEST_ROLE = "guest";
