@@ -13,7 +13,7 @@ import java.util.Objects;
 @Slf4j
 public abstract class AbstractMethodLoggingConfig {
 
-    public static final String JOURNEY_ID = "journey_id";
+    public static final String JOURNEY_ID = "Journey-ID";
 
     public abstract void monitor();
 
