@@ -37,7 +37,7 @@ public abstract class AbstractMethodLoggingConfig {
         String journeyId = request.getHeader(JOURNEY_ID);
         MDC.put(JOURNEY_ID, journeyId);
 
-        log.trace("<<< Handshake >>> {}:{} >> End point {}.{} [{}]", JOURNEY_ID, journeyId, className, methodName, sb);
+        log.info("<<< Handshake >>> {}: {} | method is being called at {}.{} [{}]", JOURNEY_ID, journeyId, className, methodName, sb);
     }
 
 }

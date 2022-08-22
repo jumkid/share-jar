@@ -1,4 +1,4 @@
-package com.jumkid.share.controller.dto;
+package com.jumkid.share.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

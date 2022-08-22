@@ -1,6 +1,7 @@
 package com.jumkid.share.user;
 
 import com.jumkid.share.security.AccessToken;
+import com.jumkid.share.security.exception.UserProfileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,15 +70,16 @@ public class UserProfileManager {
         return null;
     }
 
-    public UserProfile fetchUserProfile() {
+    public UserProfile fetchUserProfile() throws UserProfileNotFoundException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             UserDetails userDetails = (UserDetails)principal;
             return UserProfile.builder()
                     .username(userDetails.getUsername()).id(userDetails.getPassword())
                     .build();
+        } else {
+            throw new UserProfileNotFoundException("User profile could not be found. Access is denied");
         }
-        return null;
     }
 
     private AccessToken fetchAccessToken() {

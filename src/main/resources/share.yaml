@@ -11,11 +11,28 @@ info:
   license:
     name: Jumkid Public License
     url: 'http://license.jumkid.com'
+servers:
+  - description: Testing
+    url: 'http://test.jumkid.com'
+  - description: Live production
+    url: 'http://api.jumkid.com'
 
 paths: {}
 
 components:
   schemas:
+    CommonResponse:
+      description: common response message
+      properties:
+        success:
+          type: boolean
+        errorCode:
+          type: string
+        msg:
+          type: string
+        data:
+          type: object      
+
     CustomErrorResponse:
       description: custom error response message
       properties:
@@ -30,6 +47,22 @@ components:
           type: array
         httpCodeMessage:
           type: string
+
+    PagingResponse:
+      description: paginated response message
+      properties:      
+        success:
+          type: boolean
+        msg:
+          type: string
+        total:
+          type: integer
+        size:
+          type: integer
+        page:
+          type: integer      
+        data:
+          type: array
 
     LocalDateTime:
       description: local datetime object
