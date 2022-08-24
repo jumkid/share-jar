@@ -1,0 +1,18 @@
+package com.jumkid.share.security;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public enum AccessScope {
+
+    PUBLIC("public"),
+    PRIVATE("private");
+
+    @JsonValue
+    private final String value;
+
+    AccessScope(String value) { this.value = value; }
+
+    public String value() {
+        return value;
+    }
+}

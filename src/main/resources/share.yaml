@@ -77,3 +77,7 @@ components:
     DayOfWeek:
       type: string
       enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+
+    AccessScope:
+      type: string
+      enum: [public, private]   

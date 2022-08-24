@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import static com.jumkid.share.util.Constants.*;
 
 @Slf4j
 public class BearerTokenRequestFilter extends OncePerRequestFilter {
@@ -56,7 +59,7 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
                 TokenUser tokenUser = getTokenUser(request);
                 String accessToken = tokenUser.getAuthorizationToken();
 
-                if (!isAccessTokenValid(accessToken)) {
+                if (!isAnonymousUser(tokenUser) && !isAccessTokenValid(accessToken)) {
                     log.warn("access token is invalid {}", accessToken);
                     handleInvalidAccessTokenResponse(response);
                 } else {
@@ -94,6 +97,10 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    private boolean isAnonymousUser(TokenUser tokenUser) {
+        return tokenUser.getUsername().equals(ANONYMOUS_USER);
     }
 
     private boolean isAccessTokenValid(String accessToken) {
@@ -173,6 +180,8 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
         log.debug("Authentication Token is not presented or does not begin with Bearer String");
 
         return TokenUser.builder()
+                .userId(ANONYMOUS_USER).username(ANONYMOUS_USER).displayName(ANONYMOUS_USER_DISPLAY)
+                .roles(List.of(GUEST_ROLE))
                 .build();
     }
 

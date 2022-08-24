@@ -10,8 +10,9 @@ public class Constants {
     public static final String YYYYMMDDTHHMMSS = "yyyy-MM-dd'T'HH:mm:ss";
     public static final String YYYYMMDDTHHMMSS3S = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
-    public static final String ANONYMOUS_USER = "anonymousUser";
-    public static final String GUEST_ROLE = "guest";
+    public static final String ANONYMOUS_USER = "guest";
+    public static final String ANONYMOUS_USER_DISPLAY = "Guest User";
+    public static final String GUEST_ROLE = "GUEST_ROLE";
     public static final String ADMIN_ROLE = "admin";
 
 }
