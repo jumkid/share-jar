@@ -13,6 +13,7 @@ public class Constants {
     public static final String ANONYMOUS_USER = "guest";
     public static final String ANONYMOUS_USER_DISPLAY = "Guest User";
     public static final String GUEST_ROLE = "GUEST_ROLE";
-    public static final String ADMIN_ROLE = "admin";
+    public static final String ADMIN_ROLE = "ADMIN_ROLE";
+    public static final String USER_ROLE = "USER_ROLE";
 
 }
