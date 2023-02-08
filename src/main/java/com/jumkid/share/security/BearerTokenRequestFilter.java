@@ -93,8 +93,9 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
                 .disabled(false)
                 .build();
 
+        //* set token string as credential for context use *//
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                new UsernamePasswordAuthenticationToken(userDetails, tokenUser.getAuthorizationToken(), authorities);
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 
