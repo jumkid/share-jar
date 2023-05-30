@@ -1,8 +1,8 @@
 package com.jumkid.share.service;
 
-import com.jumkid.share.config.AbstractMethodLoggingConfig;
 import com.jumkid.share.security.exception.InternalRestApiException;
 import com.jumkid.share.user.UserProfileManager;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -12,12 +12,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-import static com.jumkid.share.config.AbstractMethodLoggingConfig.JOURNEY_ID;
+import static com.jumkid.share.util.Constants.JOURNEY_ID;
 
 @Slf4j
 @Component
@@ -130,10 +129,10 @@ public class InternalRestApiClient {
         }
     }
 
-    private static void logIfStatusCodeIsError(HttpStatus statusCode) {
+    private static void logIfStatusCodeIsError(HttpStatusCode statusCode) {
         if (statusCode.isError()) {
             log.error(String.format("The rest-api service returned an unexpected response: '%s'.",
-                    statusCode.getReasonPhrase()));
+                    statusCode));
         }
     }
 

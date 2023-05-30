@@ -1,5 +1,6 @@
 package com.jumkid.share.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -7,13 +8,12 @@ import org.slf4j.MDC;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
+
+import static com.jumkid.share.util.Constants.JOURNEY_ID;
 
 @Slf4j
 public abstract class AbstractMethodLoggingConfig {
-
-    public static final String JOURNEY_ID = "Journey-ID";
 
     public abstract void monitor();
 
