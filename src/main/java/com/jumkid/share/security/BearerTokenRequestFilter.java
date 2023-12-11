@@ -6,6 +6,10 @@ import com.jumkid.share.security.exception.AccessTokenInvaidException;
 import com.jumkid.share.security.jwt.JwtToken;
 import com.jumkid.share.security.jwt.JwtTokenParser;
 import com.jumkid.share.security.jwt.TokenUser;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.*;
@@ -20,10 +24,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -38,14 +38,18 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
 
     private final boolean enableTokenCheck;
 
+    private final boolean enableTokenValidation;
+
     private final String tokenIntrospectUrl;
 
     private final RestTemplate restTemplate;
 
     public BearerTokenRequestFilter(boolean enableTokenCheck,
+                                    boolean enableTokenValidation,
                                     String tokenIntrospectUrl,
                                     RestTemplate restTemplate) {
         this.enableTokenCheck = enableTokenCheck;
+        this.enableTokenValidation = enableTokenValidation;
         this.tokenIntrospectUrl = tokenIntrospectUrl;
         this.restTemplate = restTemplate;
     }
@@ -58,7 +62,7 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
                 TokenUser tokenUser = getTokenUser(request);
                 String accessToken = tokenUser.getAuthorizationToken();
 
-                if (!isAnonymousUser(tokenUser) && !isAccessTokenValid(accessToken)) {
+                if (enableTokenValidation && !isAnonymousUser(tokenUser) && !isAccessTokenValid(accessToken)) {
                     log.warn("access token is invalid {}", accessToken);
                     handleInvalidAccessTokenResponse(response);
                 } else {
@@ -133,10 +137,11 @@ public class BearerTokenRequestFilter extends OncePerRequestFilter {
 
         ObjectMapper mapper = new ObjectMapper();
         try (PrintWriter out = response.getWriter()) {
-            out.print(mapper.writeValueAsString(CommonResponse.builder()
+            out.print(mapper.writeValueAsString(
+                    CommonResponse.builder()
                     .success(false).errorCode(String.valueOf(statusCode)).msg(AccessTokenInvaidException.ERROR)
-                    .build())
-            );
+                    .build()
+            ));
             out.flush();
         } catch (Exception e) {
             throw new AccessTokenInvaidException();

@@ -1,6 +1,5 @@
 package com.jumkid.share.user;
 
-import com.jumkid.share.security.AccessToken;
 import com.jumkid.share.security.exception.UserProfileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
@@ -28,9 +25,6 @@ public class UserProfileManager {
 
     @Value("${jwt.token.client.id}")
     private String clientId;
-
-    @Value("${jwt.token.client.secret}")
-    private String clientSecret;
 
     private final RestTemplate restTemplate;
 
@@ -77,30 +71,6 @@ public class UserProfileManager {
     public String getAccessToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null ? (String)authentication.getCredentials() : null;
-    }
-
-    private AccessToken fetchAccessToken() {
-        log.debug("fetch service access token from {}", accessTokenFetchUrl);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("grant_type", "client_credentials");
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-        try {
-            ResponseEntity<AccessToken> response = restTemplate.postForEntity(accessTokenFetchUrl, request, AccessToken.class);
-
-            return response.getBody();
-        } catch (Exception e) {
-            log.error("failed to fetch access token {}", e.getMessage());
-        }
-
-        return null;
     }
 
 }

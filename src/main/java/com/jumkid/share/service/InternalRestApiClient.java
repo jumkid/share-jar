@@ -46,7 +46,7 @@ public class InternalRestApiClient {
 
     public <T> T post(URI serviceURI, MultiValueMap<String, String> params, Class<T> objectType)
             throws InternalRestApiException {
-        return internalJsonDataExchange(serviceURI, HttpMethod.POST, params, objectType);
+        return internalFormDataExchange(serviceURI, HttpMethod.POST, params, objectType);
     }
 
     public <T> T post(URI serviceURI, String payload, Class<T> objectType) throws InternalRestApiException {
@@ -55,7 +55,7 @@ public class InternalRestApiClient {
 
     public <T> T put(URI serviceURI, MultiValueMap<String, String> params, Class<T> objectType)
             throws InternalRestApiException {
-        return internalJsonDataExchange(serviceURI, HttpMethod.PUT, params, objectType);
+        return internalFormDataExchange(serviceURI, HttpMethod.PUT, params, objectType);
     }
 
     public <T> T put(URI serviceURI, String payload, Class<T> objectType) throws InternalRestApiException {
@@ -65,32 +65,32 @@ public class InternalRestApiClient {
     public <T> void delete(URI serviceURI, Class<T> objectType) throws InternalRestApiException {
         HttpHeaders httpHeaders = createHttpHeaders(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<Object> entity = new HttpEntity<>(httpHeaders);
-        doJsonDataExchange(serviceURI, HttpMethod.DELETE, entity, objectType);
+        doDataExchange(serviceURI, HttpMethod.DELETE, entity, objectType);
     }
 
     private <T> T internalJsonDataExchange(URI serviceURI, Class<T> objectType)
             throws InternalRestApiException{
         HttpHeaders httpHeaders = createHttpHeaders(null);
         HttpEntity<Object> entity = new HttpEntity<>(httpHeaders);
-        return doJsonDataExchange(serviceURI, HttpMethod.GET, entity, objectType);
+        return doDataExchange(serviceURI, HttpMethod.GET, entity, objectType);
     }
 
-    private <T> T internalJsonDataExchange(URI serviceURI, HttpMethod httpMethod,
+    private <T> T internalFormDataExchange(URI serviceURI, HttpMethod httpMethod,
                                        MultiValueMap<String, String> params, Class<T> objectType)
             throws InternalRestApiException{
         HttpHeaders httpHeaders = createHttpHeaders(null);
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, httpHeaders);
-        return doJsonDataExchange(serviceURI, httpMethod, entity, objectType);
+        return doDataExchange(serviceURI, httpMethod, entity, objectType);
     }
 
     private <T> T internalJsonDataExchange(URI serviceURI, HttpMethod httpMethod, String payload, Class<T> objectType)
             throws InternalRestApiException{
         HttpHeaders httpHeaders = createHttpHeaders(null);
         HttpEntity<String> entity = new HttpEntity<>(payload, httpHeaders);
-        return doJsonDataExchange(serviceURI, httpMethod, entity, objectType);
+        return doDataExchange(serviceURI, httpMethod, entity, objectType);
     }
 
-    private <T> T doJsonDataExchange(URI serviceURI,
+    private <T> T doDataExchange(URI serviceURI,
                                  HttpMethod httpMethod,
                                  HttpEntity<?> entity,
                                  Class<T> objectType) throws InternalRestApiException {
@@ -99,7 +99,7 @@ public class InternalRestApiClient {
             logIfStatusCodeIsError(responseEntity.getStatusCode());
             return responseEntity.getBody();
         } catch (HttpClientErrorException ex) {
-            throw new InternalRestApiException(ex.getMessage());
+            throw new InternalRestApiException(ex.getStatusCode(), ex.getMessage());
         } catch (ResourceAccessException ex) {
             log.error("Could not connect to the rest api service.");
             throw new InternalRestApiException(ex.getMessage());
@@ -137,12 +137,12 @@ public class InternalRestApiClient {
     }
 
     private HttpHeaders createHttpHeaders(MediaType mediaType) {
-        if (mediaType == null) mediaType = MediaType.APPLICATION_JSON;
-
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set(JOURNEY_ID, httpServletRequest.getHeader(JOURNEY_ID));
-        httpHeaders.setAccept(Collections.singletonList(mediaType));
-        httpHeaders.setContentType(mediaType);
+        if (mediaType != null) {
+            httpHeaders.setAccept(Collections.singletonList(mediaType));
+            httpHeaders.setContentType(mediaType);
+        }
         httpHeaders.setBearerAuth(userProfileManager.getAccessToken());
 
         return httpHeaders;
