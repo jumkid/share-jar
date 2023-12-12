@@ -3,44 +3,42 @@ package com.jumkid.share.service;
 import com.jumkid.share.user.UserProfileManager;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.jumkid.share.util.Constants.JOURNEY_ID;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @Slf4j
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class InternalRestApiClientTests {
+class InternalRestApiClientTests {
 
-    @Mock
     private RestTemplate restTemplate;
-    @Mock
     private UserProfileManager userProfileManager;
-    @Mock
     private HttpServletRequest httpServletRequest;
 
     private InternalRestApiClient internalRestApiClient;
 
-    @Before
-    public void setUp() {
+    @BeforeAll
+    public void setUp(@Mock RestTemplate restTemplate,
+                      @Mock UserProfileManager userProfileManager,
+                      @Mock HttpServletRequest httpServletRequest) {
+        this.restTemplate = restTemplate;
+        this.userProfileManager = userProfileManager;
+        this.httpServletRequest = httpServletRequest;
         this.internalRestApiClient = new InternalRestApiClient(restTemplate, userProfileManager, httpServletRequest);
 
         when(httpServletRequest.getHeader(JOURNEY_ID)).thenReturn("abed-1234");
@@ -48,12 +46,14 @@ public class InternalRestApiClientTests {
     }
 
     @Test
-    public void dummyTest() {
-        assertTrue(true);
+    @DisplayName("This is a dummy test case")
+    @Disabled("this is just for test purpose")
+    void dummyTest() {
+        fail("a dummy function should never run");
     }
 
     @Test
-    public void whenGivenServiceURIAndObjectType_shouldHandleGetSuccessfully() throws URISyntaxException {
+    void whenGivenServiceURIAndObjectType_shouldHandleGetSuccessfully() throws URISyntaxException {
         //given
         URI baseUri = new URI("http://api.jumkid.com");
         String responseBody = "hello world!";
