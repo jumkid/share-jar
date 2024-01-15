@@ -1,5 +1,6 @@
 package com.jumkid.share.service;
 
+import com.jumkid.share.security.exception.InternalRestApiException;
 import com.jumkid.share.user.UserProfileManager;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,8 @@ class InternalRestApiClientTests {
     }
 
     @Test
-    void whenGivenServiceURIAndObjectType_shouldHandleGetSuccessfully() throws URISyntaxException {
+    @DisplayName("rest api client do get normally")
+    void whenGivenServiceURIAndObjectType_Get_shouldHandleSuccessfully() throws URISyntaxException {
         //given
         URI baseUri = new URI("http://api.jumkid.com");
         String responseBody = "hello world!";
@@ -64,5 +66,19 @@ class InternalRestApiClientTests {
         String response = internalRestApiClient.get(baseUri, String.class);
         //then
         assertEquals(responseBody, response, "response does not match");
+    }
+
+    @Test
+    @DisplayName("rest api client do get without valid uri")
+    void whenGivenEmptyURI_Get_shouldThrowException() throws URISyntaxException {
+        //given
+        URI baseUri = new URI("");
+        when(restTemplate.exchange(eq(baseUri),
+                eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(new InternalRestApiException());
+        //then
+        assertThrows(InternalRestApiException.class, () -> {
+            internalRestApiClient.get(null, String.class);
+        });
     }
 }

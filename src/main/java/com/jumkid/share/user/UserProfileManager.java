@@ -1,5 +1,6 @@
 package com.jumkid.share.user;
 
+import com.jumkid.share.config.JwtTokenConfigProperties;
 import com.jumkid.share.security.exception.UserProfileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +20,6 @@ public class UserProfileManager {
 
     @Value("${internal.api.user}")
     private String userProfileAccessUrl;
-
-    @Value("${jwt.token.fetch.url}")
-    private String accessTokenFetchUrl;
-
-    @Value("${jwt.token.client.id}")
-    private String clientId;
 
     private final RestTemplate restTemplate;
 

@@ -35,6 +35,7 @@ public abstract class AbstractMethodLoggingConfig {
 
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String journeyId = request.getHeader(JOURNEY_ID);
+        //set custom field in logger
         MDC.put(JOURNEY_ID, journeyId);
 
         log.info("<<< Handshake >>> {}: {} | method is being called at {}.{} [{}]", JOURNEY_ID, journeyId, className, methodName, sb);
