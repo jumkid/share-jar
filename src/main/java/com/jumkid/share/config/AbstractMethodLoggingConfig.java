@@ -15,9 +15,9 @@ import static com.jumkid.share.util.Constants.JOURNEY_ID;
 @Slf4j
 public abstract class AbstractMethodLoggingConfig {
 
-    public abstract void monitor();
+    public abstract void monitorPointCut();
 
-    public abstract void log4AllControllers(JoinPoint joinPoint);
+    public abstract void controllerJoinPoint(JoinPoint joinPoint);
 
     public void log(JoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
@@ -27,10 +27,10 @@ public abstract class AbstractMethodLoggingConfig {
         String methodName = methodSignature.getName();
 
         StringBuilder sb = new StringBuilder();
-        String[] argNames = methodSignature.getParameterNames();
+        String[] paramNames = methodSignature.getParameterNames();
         Object[] args = joinPoint.getArgs();
-        for (int i=0;i<argNames.length;i++) {
-            sb.append(argNames[i]).append("=").append(args[i]).append(", ");
+        for (int i=0;i<paramNames.length;i++) {
+            sb.append(paramNames[i]).append("=").append(args[i]).append(", ");
         }
 
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();

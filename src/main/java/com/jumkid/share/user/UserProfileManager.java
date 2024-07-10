@@ -18,7 +18,7 @@ import java.util.Optional;
 @Component
 public class UserProfileManager {
 
-    @Value("${internal.api.user}")
+    @Value("${com.jumkid.api.user-info}")
     private String userProfileAccessUrl;
 
     private final RestTemplate restTemplate;

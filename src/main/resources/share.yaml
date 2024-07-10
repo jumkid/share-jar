@@ -16,9 +16,7 @@ servers:
     url: 'http://test.jumkid.com'
   - description: Live production
     url: 'http://api.jumkid.com'
-
 paths: {}
-
 components:
   schemas:
     CommonResponse:
@@ -31,8 +29,7 @@ components:
         msg:
           type: string
         data:
-          type: object      
-
+          type: object
     CustomErrorResponse:
       description: custom error response message
       properties:
@@ -47,10 +44,9 @@ components:
           type: array
         httpCodeMessage:
           type: string
-
     PagingResponse:
       description: paginated response message
-      properties:      
+      properties:
         success:
           type: boolean
         msg:
@@ -60,24 +56,49 @@ components:
         size:
           type: integer
         page:
-          type: integer      
+          type: integer
         data:
           type: array
-
     LocalDateTime:
       description: local datetime object
       type: string
       pattern: '^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})'
-      example: "2022-06-22T15:47:21.900"
-
+      example: '2022-06-22T15:47:21.900'
     Month:
       type: string
-      enum: [JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER]
-      
+      enum:
+        - JANUARY
+        - FEBRUARY
+        - MARCH
+        - APRIL
+        - MAY
+        - JUNE
+        - JULY
+        - AUGUST
+        - SEPTEMBER
+        - OCTOBER
+        - NOVEMBER
+        - DECEMBER
     DayOfWeek:
       type: string
-      enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
-
+      enum:
+        - MONDAY
+        - TUESDAY
+        - WEDNESDAY
+        - THURSDAY
+        - FRIDAY
+        - SATURDAY
+        - SUNDAY
     AccessScope:
       type: string
-      enum: [public, private]   
+      enum:
+        - public
+        - private
+        
+  parameters:
+    Journey-ID:
+      name: journeyId
+      in: header
+      required: true
+      schema:
+        type: string

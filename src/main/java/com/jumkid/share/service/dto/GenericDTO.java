@@ -6,33 +6,29 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import static com.jumkid.share.util.Constants.YYYYMMDDTHHMMSS3S;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter @Setter
+@SuperBuilder @Data @AllArgsConstructor @NoArgsConstructor
 @JsonIgnoreProperties(value = { "createdBy", "creationDate", "modifiedBy" })
-public abstract class GenericDTO {
+public abstract class GenericDTO implements Serializable {
 
     private String createdBy;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = YYYYMMDDTHHMMSS3S)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime creationDate;
+    private LocalDateTime createdOn;
 
     private String modifiedBy;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = YYYYMMDDTHHMMSS3S)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime modificationDate;
-
+    private LocalDateTime modifiedOn;
 }
