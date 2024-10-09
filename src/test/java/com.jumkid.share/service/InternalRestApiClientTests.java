@@ -55,7 +55,8 @@ class InternalRestApiClientTests {
 
     @Test
     @DisplayName("rest api client do get normally")
-    void whenGivenServiceURIAndObjectType_Get_shouldHandleSuccessfully() throws URISyntaxException {
+    void whenGivenServiceURIAndObjectType_Get_shouldHandleSuccessfully()
+            throws URISyntaxException, InternalRestApiException {
         //given
         URI baseUri = new URI("http://api.jumkid.com");
         String responseBody = "hello world!";
@@ -75,7 +76,7 @@ class InternalRestApiClientTests {
         URI baseUri = new URI("");
         when(restTemplate.exchange(eq(baseUri),
                 eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-                .thenThrow(new InternalRestApiException());
+                .thenReturn(null);
         //then
         assertThrows(InternalRestApiException.class, () -> {
             internalRestApiClient.get(null, String.class);

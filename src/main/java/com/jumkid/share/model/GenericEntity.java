@@ -2,6 +2,7 @@ package com.jumkid.share.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -18,6 +19,7 @@ public class GenericEntity {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Version
     @Column(name = "modified_on")
     private LocalDateTime modifiedOn;
 
