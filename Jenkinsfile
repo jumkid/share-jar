@@ -8,9 +8,9 @@ pipeline {
         sh 'find . | sed -e "s/[^-][^\\/]*\\// |/g" -e "s/|\\([^ ]\\)/|-\\1/"'
       }
     }
+  }
 
-    tools {
-      maven '3.9.9'
-    }
+  tools {
+    maven '3.9.9'
   }
 }
