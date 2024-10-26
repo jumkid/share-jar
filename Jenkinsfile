@@ -8,8 +8,14 @@ pipeline {
         sh 'find . | sed -e "s/[^-][^\\/]*\\// |/g" -e "s/|\\([^ ]\\)/|-\\1/"'
       }
     }
-  }
 
+    stage('Source') {
+      steps {
+        echo 'Source Stage'
+      }
+    }
+
+  }
   tools {
     maven '3.9.9'
   }
