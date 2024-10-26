@@ -9,5 +9,8 @@ pipeline {
       }
     }
 
+    tools {
+      maven '3.9.9'
+    }
   }
 }
